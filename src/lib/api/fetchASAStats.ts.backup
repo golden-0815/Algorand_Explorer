@@ -1,0 +1,297 @@
+import { EvaluatedAccount } from '../../types/asastats';
+import { retryWithBackoff, safeParseFloat, formatErrorMessage } from '../utils';
+
+// Token management
+const ACCESS_TOKEN = import.meta.env.VITE_ASA_STATS_TOKEN || 'hardcoded-fallback-token';
+
+let currentAccessToken = ACCESS_TOKEN;
+
+// Enhanced caching with localStorage persistence
+const CACHE_KEY = 'asastats_cache';
+const CACHE_DURATION = 1 * 60 * 1000; // 1 minute - aligns with ASA Stats update frequency
+const MAX_CACHE_SIZE = 50; // Maximum number of cached entries
+
+interface CacheEntry {
+  data: EvaluatedAccount;
+  timestamp: number;
+  address: string;
+}
+
+// Load cache from localStorage on startup
+let cache = new Map<string, CacheEntry>();
+
+// Initialize cache from localStorage
+try {
+  const stored = localStorage.getItem(CACHE_KEY);
+  if (stored) {
+    const parsed = JSON.parse(stored);
+    cache = new Map(Object.entries(parsed));
+    
+    // Clean expired entries
+    const now = Date.now();
+    for (const [key, entry] of cache.entries()) {
+      if (now - entry.timestamp > CACHE_DURATION) {
+        cache.delete(key);
+      }
+    }
+  }
+} catch (error) {
+  // If localStorage is corrupted, start fresh
+  cache = new Map();
+}
+
+// Save cache to localStorage
+function saveCacheToStorage(): void {
+  try {
+    const cacheObj = Object.fromEntries(cache);
+    localStorage.setItem(CACHE_KEY, JSON.stringify(cacheObj));
+  } catch (error) {
+    // If localStorage is full, clear old entries
+    const entries = Array.from(cache.entries());
+    const sorted = entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
+    
+    // Keep only the newest entries
+    const toKeep = sorted.slice(-Math.floor(MAX_CACHE_SIZE * 0.8));
+    cache = new Map(toKeep);
+    
+    try {
+      const cacheObj = Object.fromEntries(cache);
+      localStorage.setItem(CACHE_KEY, JSON.stringify(cacheObj));
+    } catch (e) {
+      // If still failing, clear cache entirely
+      cache.clear();
+      localStorage.removeItem(CACHE_KEY);
+    }
+  }
+}
+
+// Export function to update token (used by refresh utility)
+export function updateAccessToken(newToken: string) {
+  currentAccessToken = newToken;
+  // Clear cache when token is refreshed to ensure fresh data
+  cache.clear();
+  saveCacheToStorage();
+}
+
+// Simple input processing
+function processAddress(address: string): string {
+  return address.trim();
+}
+
+async function refreshAccessToken(): Promise<string> {
+  const refreshToken = import.meta.env.VITE_ASA_STATS_REFRESH_TOKEN;
+  
+  if (!refreshToken || refreshToken === 'your_refresh_token_here') {
+    throw new Error('Refresh token not configured. Please set VITE_ASA_STATS_REFRESH_TOKEN in your environment variables.');
+  }
+
+  try {
+    const response = await fetch('/api/token/refresh/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        refresh: refreshToken
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Token refresh failed: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    currentAccessToken = data.access;
+    return data.access;
+  } catch (error) {
+    throw new Error('Authentication failed. Please check your tokens.');
+  }
+}
+
+// Retry logic with exponential backoff - now using utility function
+async function fetchWithRetry<T>(
+  fetchFn: () => Promise<T>,
+  maxRetries: number = 3,
+  baseDelay: number = 1000
+): Promise<T> {
+  return retryWithBackoff(fetchFn, maxRetries, baseDelay);
+}
+
+// Data validation function
+function validateASAStatsResponse(data: any): EvaluatedAccount {
+  // Ensure required arrays exist
+  if (!data.asaitems) {
+    console.warn('ASA Stats response missing asaitems array, initializing empty array');
+    data.asaitems = [];
+  }
+  if (!data.nftcollections) {
+    console.warn('ASA Stats response missing nftcollections array, initializing empty array');
+    data.nftcollections = [];
+  }
+  if (!data.notevals) {
+    console.warn('ASA Stats response missing notevals array, initializing empty array');
+    data.notevals = [];
+  }
+  
+  // Ensure total object exists
+  if (!data.total) {
+    console.warn('ASA Stats response missing total object, initializing default values');
+    data.total = {
+      algo: '0',
+      asa: '0',
+      nft: '0',
+      total: '0',
+      totalusdc: '0',
+      priceusdc: '1',
+      pricealgo: '1',
+      noteval: 0,
+      totalwonft: '0',
+      totalwonftusdc: '0'
+    };
+  }
+  
+  // Ensure account_info exists
+  if (!data.account_info) {
+    console.warn('ASA Stats response missing account_info, initializing default values');
+    data.account_info = {
+      addresses: [],
+      bundle: null,
+      values_in: 'ALGO',
+      online: null
+    };
+  }
+  
+  return data as EvaluatedAccount;
+}
+
+export async function fetchASAStats(
+  address: string,
+  useAuth: boolean = true
+): Promise<EvaluatedAccount> {
+  // Simple input processing
+  const processedAddress = processAddress(address);
+  
+  // Check cache first
+  const cacheKey = `${processedAddress}-${useAuth}`;
+  const cached = cache.get(cacheKey);
+  
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    return cached.data;
+  }
+
+  const headers: Record<string, string> = {
+    'Accept': 'application/json',
+  };
+
+  if (useAuth) {
+    headers['Authorization'] = `Bearer ${currentAccessToken}`;
+  }
+
+  const performFetch = async (): Promise<EvaluatedAccount> => {
+    try {
+      // Use the Vite proxy to avoid CORS issues
+      const url = `/api/asastats/${processedAddress}/`;
+  const response = await fetch(
+        url,
+        {
+          method: 'GET',
+          headers,
+        }
+      );
+
+      if (response.status === 401 && useAuth) {
+        // Token expired, try to refresh
+        await refreshAccessToken();
+        
+        // Retry with new token
+        headers['Authorization'] = `Bearer ${currentAccessToken}`;
+        const retryResponse = await fetch(
+          url,
+    {
+      method: 'GET',
+      headers,
+    }
+  );
+
+        if (!retryResponse.ok) {
+          throw new Error(`ASA Stats API error: ${retryResponse.status} ${retryResponse.statusText}`);
+        }
+
+        const result = await retryResponse.json();
+        // Validate and normalize the response data
+        const validatedResult = validateASAStatsResponse(result);
+        // Cache the successful result
+        cache.set(cacheKey, { data: validatedResult, timestamp: Date.now(), address: processedAddress });
+        saveCacheToStorage();
+        return validatedResult;
+      }
+
+  if (!response.ok) {
+    throw new Error(`ASA Stats API error: ${response.status} ${response.statusText}`);
+  }
+
+      const result = await response.json();
+      // Validate and normalize the response data
+      const validatedResult = validateASAStatsResponse(result);
+      // Cache the successful result
+      cache.set(cacheKey, { data: validatedResult, timestamp: Date.now(), address: processedAddress });
+      saveCacheToStorage();
+      return validatedResult;
+    } catch (error) {
+      throw new Error(formatErrorMessage(error));
+    }
+  };
+
+  return fetchWithRetry(performFetch);
+}
+
+// Cache management utilities
+export function clearASACache(): void {
+  cache.clear();
+  localStorage.removeItem(CACHE_KEY);
+}
+
+export function getASACacheStats(): { 
+  entries: number; 
+  oldestEntry: number | null; 
+  newestEntry: number | null;
+  cacheSize: string;
+} {
+  if (cache.size === 0) {
+    return { entries: 0, oldestEntry: null, newestEntry: null, cacheSize: '0 B' };
+  }
+
+  const timestamps = Array.from(cache.values()).map(entry => entry.timestamp);
+  const oldest = Math.min(...timestamps);
+  const newest = Math.max(...timestamps);
+
+  // Calculate cache size
+  try {
+    const cacheObj = Object.fromEntries(cache);
+    const cacheString = JSON.stringify(cacheObj);
+    const sizeInBytes = new Blob([cacheString]).size;
+    const sizeInKB = (sizeInBytes / 1024).toFixed(1);
+    const cacheSize = `${sizeInKB} KB`;
+    return { entries: cache.size, oldestEntry: oldest, newestEntry: newest, cacheSize };
+  } catch {
+    return { entries: cache.size, oldestEntry: oldest, newestEntry: newest, cacheSize: 'Unknown' };
+  }
+}
+
+export function cleanupExpiredCache(): number {
+  const now = Date.now();
+  let cleanedCount = 0;
+  
+  for (const [key, entry] of cache.entries()) {
+    if (now - entry.timestamp > CACHE_DURATION) {
+      cache.delete(key);
+      cleanedCount++;
+    }
+  }
+  
+  if (cleanedCount > 0) {
+    saveCacheToStorage();
+  }
+  
+  return cleanedCount;
+}
