@@ -1,0 +1,382 @@
+Vestige Labs API
+ 4.0.0 
+OAS 3.1
+/openapi.json
+To be used with https://api.vestigelabs.org
+
+GET
+/wallets/{address}/value
+Get Wallet Value
+
+Get wallet value.
+
+Parameters
+Name	Description
+address *
+string
+(path)
+address
+network_id
+integer
+(query)
+Default value : 0
+
+0
+denominating_asset_id
+integer
+(query)
+Default value : 0
+
+0
+
+WalletValueSerializerCollapse allobject
+assetsCollapse allobject
+Additional propertiesCollapse allobject
+nameCollapse all(string | null)
+Any ofCollapse all(string | null)
+#0string
+#1null
+tickerCollapse all(string | null)
+Any ofCollapse all(string | null)
+#0string
+#1null
+decimalsinteger
+pricenumber
+price1dnumber
+total_lockupnumber
+total_supplynumber
+labelsCollapse allarray<integer>
+Itemsinteger
+imageCollapse all(string | null)
+Any ofCollapse all(string | null)
+#0string
+#1null
+poolsCollapse allobject
+Additional propertiesCollapse allobject
+protocol_idinteger
+feeinteger
+token_supplyinteger
+asset_1_idinteger
+asset_1_supplyinteger
+asset_2_idinteger
+asset_2_supplyinteger
+balancesCollapse allobject
+Additional propertiesnumber
+token_balancesCollapse allobject
+Additional propertiesinteger
+labeled_balancesCollapse allarray<object>
+ItemsCollapse allobject
+providerstring
+namestring
+typestring
+balancesCollapse allobject
+Additional propertiesnumber
+token_balancesCollapse allobject
+Additional propertiesinteger
+
+curl -X 'GET' \
+  'https://api.vestigelabs.org/wallets/G54HYCO33ZESZJ5P3IKMQMG5EOZNNUQAMS75K3CSR3VLGPLZBSHCVKOL5A/value?network_id=0&denominating_asset_id=0' \
+  -H 'accept: application/json'
+
+Request URL
+https://api.vestigelabs.org/wallets/G54HYCO33ZESZJ5P3IKMQMG5EOZNNUQAMS75K3CSR3VLGPLZBSHCVKOL5A/value?network_id=0&denominating_asset_id=0
+
+{
+  "assets": {
+    "0": {
+      "name": "Algorand",
+      "ticker": "ALGO",
+      "decimals": 6,
+      "price": 1,
+      "price1d": 1,
+      "total_lockup": 349355161.799877,
+      "total_supply": 10000000000,
+      "labels": [
+        9
+      ],
+      "image": "https://asa-list.tinyman.org/assets/0/icon.png"
+    },
+    "31566704": {
+      "name": "USDC",
+      "ticker": "USDC",
+      "decimals": 6,
+      "price": 3.6453,
+      "price1d": 3.5292,
+      "total_lockup": 3788684.647692,
+      "total_supply": 18446744073709.55,
+      "labels": [
+        0,
+        8,
+        2
+      ],
+      "image": "https://asa-list.tinyman.org/assets/31566704/icon.png"
+    },
+    "386192725": {
+      "name": "goBTC",
+      "ticker": "goBTC",
+      "decimals": 8,
+      "price": 423330,
+      "price1d": 428170,
+      "total_lockup": 8.81852978,
+      "total_supply": 21000000,
+      "labels": [
+        8,
+        2
+      ],
+      "image": "https://asa-list.tinyman.org/assets/386192725/icon.png"
+    },
+    "393537671": {
+      "name": "ASA Stats Token",
+      "ticker": "ASASTATS",
+      "decimals": 6,
+      "price": 0.00028041,
+      "price1d": 0.00028313,
+      "total_lockup": 447496489.948314,
+      "total_supply": 1000000000,
+      "labels": [
+        2
+      ],
+      "image": "https://asa-list.tinyman.org/assets/393537671/icon.png"
+    },
+    "700965019": {
+      "name": "Vestige",
+      "ticker": "VEST",
+      "decimals": 6,
+      "price": 0.058366,
+      "price1d": 0.057994,
+      "total_lockup": 13588960.082582,
+      "total_supply": 100000000,
+      "labels": [
+        2
+      ],
+      "image": "https://asa-list.tinyman.org/assets/700965019/icon.png"
+    },
+    "1096015467": {
+      "name": "Pepe",
+      "ticker": "PEPE",
+      "decimals": 4,
+      "price": 0.000043568,
+      "price1d": 0.000045044,
+      "total_lockup": 4889973976.2765,
+      "total_supply": 420689999999999,
+      "labels": [
+        2
+      ],
+      "image": "https://asa-list.tinyman.org/assets/1096015467/icon.png"
+    },
+    "1182620971": {
+      "name": "Mercury Index",
+      "ticker": "MIT",
+      "decimals": 3,
+      "price": 0.18292,
+      "price1d": 0.18236,
+      "total_lockup": 192278.511,
+      "total_supply": 1000000,
+      "labels": [
+        2
+      ],
+      "image": "https://algorand-wallet-mainnet.b-cdn.net/media/assets-logo-png/2024/01/08/d614b61fde834b49ae48c2308564829b.png?format=png&height=256&width=256"
+    },
+    "1775410837": {
+      "name": "BOBO",
+      "ticker": "BOBO",
+      "decimals": 5,
+      "price": 0.0000018553,
+      "price1d": 0.0000018262,
+      "total_lockup": 13210393544.95883,
+      "total_supply": 69000000000000,
+      "labels": [
+        2
+      ],
+      "image": "https://algorand-wallet-mainnet.b-cdn.net/media/asset_verification_requests_logo_png/2024/04/22/d3b0c39b1e8e4d77bd6c8b1b597cbe78.png?format=png&height=256&width=256"
+    },
+    "1954250035": {
+      "name": "PeiPei",
+      "ticker": "PEIPEI",
+      "decimals": 4,
+      "price": 1.2999e-7,
+      "price1d": 1.3011e-7,
+      "total_lockup": 5451708848.2269,
+      "total_supply": 420690000000000,
+      "labels": [
+        2
+      ],
+      "image": "https://algorand-wallet-mainnet.b-cdn.net/media/asset_verification_requests_logo_png/2024/06/12/f5dfa73bb2894e5fb87334fb47baba42.png?format=png&height=256&width=256"
+    },
+    "2726252423": {
+      "name": "Alpha Arcade",
+      "ticker": "ALPHA",
+      "decimals": 6,
+      "price": 0.018648,
+      "price1d": 0.019714,
+      "total_lockup": 14139007.869531,
+      "total_supply": 1000000000,
+      "labels": [
+        2
+      ],
+      "image": "https://algorand-wallet-mainnet.b-cdn.net/media/project_verification_requests_logo_png/2025/02/04/27439fb5280241e2bb8bea34e05fcb81.png?format=png&height=256&width=256"
+    },
+    "2994233666": {
+      "name": "Power",
+      "ticker": "POW",
+      "decimals": 6,
+      "price": 0.022111,
+      "price1d": 0.023462,
+      "total_lockup": 14441583.652613,
+      "total_supply": 1000000000,
+      "labels": [
+        2
+      ],
+      "image": "https://asa-list.tinyman.org/assets/2994233666/icon.png"
+    },
+    "3046997745": {
+      "name": "Mist",
+      "ticker": "MIST",
+      "decimals": 9,
+      "price": 41488,
+      "price1d": 41792,
+      "total_lockup": 0.435365107,
+      "total_supply": 1,
+      "labels": [
+        0
+      ],
+      "image": ""
+    }
+  },
+  "pools": {
+    "1002677148": {
+      "protocol_id": 2,
+      "fee": 3000,
+      "token_supply": 1834169094692,
+      "asset_1_id": 700965019,
+      "asset_1_supply": 8081899172745,
+      "asset_2_id": 0,
+      "asset_2_supply": 471250502816
+    },
+    "2378844758": {
+      "protocol_id": 3,
+      "fee": 10000,
+      "token_supply": 71560818454,
+      "asset_1_id": 1954250035,
+      "asset_1_supply": 25793625817529,
+      "asset_2_id": 0,
+      "asset_2_supply": 336000963
+    }
+  },
+  "balances": {
+    "0": 152.771183,
+    "31566704": 1.079013,
+    "393537671": 530000,
+    "700965019": 10039.047031,
+    "1096015467": 50000000,
+    "1182620971": 2000,
+    "1775410837": 1000000000,
+    "1954250035": 5276237487.6883,
+    "2726252423": 2182,
+    "2994233666": 25000,
+    "3046997745": 0.001168239
+  },
+  "token_balances": {
+    "1002677148": 1249189418,
+    "2378844758": 71560817454
+  },
+  "labeled_balances": [
+    {
+      "provider": "Reti",
+      "name": "Reti Pooling",
+      "type": "Staked",
+      "balances": {
+        "0": 59160.270975
+      },
+      "token_balances": {}
+    },
+    {
+      "provider": "Folks",
+      "name": "Folks v2 deposit",
+      "type": "Deposited",
+      "balances": {
+        "0": 10.046413,
+        "386192725": 0.06250524
+      },
+      "token_balances": {}
+    },
+    {
+      "provider": "Pera",
+      "name": "Pera Asset Inbox",
+      "type": "Amount",
+      "balances": {
+        "0": 0.097
+      },
+      "token_balances": {}
+    },
+    {
+      "provider": "NFDomains",
+      "name": "NFD vault",
+      "type": "Amount",
+      "balances": {
+        "0": 0.0901
+      },
+      "token_balances": {}
+    },
+    {
+      "provider": "Folks",
+      "name": "Folks v2 collateral",
+      "type": "Collateral",
+      "balances": {
+        "386192725": 0.01000213
+      },
+      "token_balances": {}
+    },
+    {
+      "provider": "Folks",
+      "name": "Folks v2 borrow",
+      "type": "Borrowed",
+      "balances": {
+        "31566704": -355.880885,
+        "386192725": -1e-8
+      },
+      "token_balances": {}
+    }
+  ]
+}
+
+Response headers
+ access-control-allow-origin: * 
+ alt-svc: h3=":443"; ma=86400 
+ cf-cache-status: DYNAMIC 
+ cf-ray: 95f7a77e6cbc0ca6-EWR 
+ content-encoding: zstd 
+ content-type: application/json 
+ date: Tue,15 Jul 2025 07:47:54 GMT 
+ nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800} 
+ report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=ag9K%2BI2QOy4%2FG4g5bNYZYwJOoAWAQTv3P6l2rZoCZQuquXqdEplS67BNhefDdWUWbmw7pNbD%2FwMq3OXJLkXbaCyedKwa2SRIHVEiqIAkiBF%2B7pq8hNFtvV4bBVMx"}]} 
+ server: cloudflare 
+ x-ratelimit-burst-limit: 90 
+ x-ratelimit-burst-remaining: 88 
+ x-ratelimit-limit: 60 
+ x-ratelimit-remaining: 58 
+
+
+
+GET
+/ping
+Echo
+
+Ping the server to check if it's alive.
+
+Parameters
+Try it out
+No parameters
+
+Responses
+Code	Description	Links
+200	
+Successful Response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+"string"
