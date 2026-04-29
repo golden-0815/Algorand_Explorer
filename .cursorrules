@@ -1,0 +1,89 @@
+# .cursorrules — Algorand Explorer
+
+project_type: "Frontend-only API dashboard"
+stack: ["Vite", "React", "TypeScript", "Tailwind CSS", "shadcn/ui", "Lucide React", "Recharts"]
+theme: {
+  background: "#0E0E0E",
+  text: "#E6E6E6",
+  accent: "#F1CB83",
+  font: "Chakra Petch"
+}
+folder_conventions:
+  - /pages: all page entry components (e.g., MainPage.tsx, DebugPage.tsx)
+  - /components: all UI blocks (e.g., AddressInput, ASATokenList)
+  - /lib/api: API wrappers (e.g., fetchASAStats.ts, fetchNFD.ts)
+  - /types: shared interfaces from ASAStats and NFD schemas
+  - All file names camelCase, components PascalCase
+  - Avoid deep nesting (max depth 2 inside /components or /lib)
+
+state_management: "React local state only (useState/useEffect), no Zustand"
+backend: "None — fetch from ASA Stats and NFD APIs only"
+auth: "API token hardcoded/test only for now — no auth flow"
+
+currency_toggle:
+  - Header must include currency toggle (ALGO/USD) with shadcn/ui Switch component
+  - Toggle state managed in App.tsx and passed down to components
+  - When ALGO mode: all values displayed in ALGO (remove "ALGO Value USD" field)
+  - When USD mode: all values displayed in USD
+  - ProfileSummary program breakdown values change based on currency toggle
+  - AssetAccordionCard and other components respect currency toggle
+  - Use Lucide icons: DollarSign for USD, Coins for ALGO
+  - Toggle should be compact and right-aligned in header
+
+ui_library:
+  - Use shadcn/ui components for all UI elements
+  - Use Lucide React icons exclusively (no other icon libraries)
+  - Import icons from 'lucide-react' package
+  - Prefer shadcn/ui Button, Card, Input, Badge, Alert, Switch components
+  - Use shadcn/ui charts (Recharts-based) for data visualization
+  - Available chart components: LineChart, BarChart, PieChart, AreaChart, RadarChart
+
+emoji_guidelines:
+  - Use minimal emoji, prefer color circles: 🟡🔴
+  - Use 🟢 for success/positive states
+  - Use 🟡 for warning/attention states  
+  - Use 🔴 for error/negative states
+  - Avoid text emojis, use Lucide icons instead
+
+style_rules:
+  - Use Tailwind classes directly (no CSS modules or styled-components)
+  - All components must support dark mode by default
+  - Font must be Chakra Petch (imported via Google Fonts in index.css)
+  - Prefer bordered containers over card shadows
+  - Use `text-sm`, `text-lg`, `tracking-tight`, `rounded-md`, `hover:opacity-90` patterns
+  - Use shadcn/ui theming system for consistent styling
+
+api_usage:
+  - Use `fetchASAStats(address: string): Promise<EvaluatedAccount>` from /lib/api
+  - Use `fetchNFD(address: string): Promise<NFDMetadata | null>`
+  - Do not wrap fetches in Zustand or Context
+  - Validate address input before sending to API
+
+testing & debug:
+  - DebugPage must log full ASA Stats response to console
+  - Display JSON preview in a `<pre>` or scrollable viewer
+  - Include visible error states if address is invalid or API fails
+
+component_principles:
+  - Each component should accept typed props and be reusable
+  - All external API types go in `/types`, no inline `any`
+  - Avoid prop drilling deeper than 2 levels
+  - Optional fields (e.g., `avatar`, `unit`, `image`) must be null-safe
+  - Use shadcn/ui components as building blocks
+  - Import Lucide icons with descriptive names
+
+ui_behavior:
+  - MainPage: input field > fetch > display profile summary
+  - ProfileSummary → TokenList + NFTList + NFDTag (modular)
+  - Do not rely on global state or router-based memory
+  - Minimal interactions, no animations unless added later
+  - Use shadcn/ui components for consistent UX
+  - Currency toggle affects all value displays throughout the app
+
+build_goals:
+  - Zero-config deploy (e.g., Netlify-ready)
+  - No runtime errors in absence of NFD/ASA data
+  - Works with both `.algo` names and raw Algorand addresses
+  - shadcn/ui components properly configured
+  - Lucide icons optimized and tree-shaken
+  - Charts integrated for portfolio visualization
